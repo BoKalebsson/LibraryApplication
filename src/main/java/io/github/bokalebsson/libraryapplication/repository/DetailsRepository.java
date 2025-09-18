@@ -10,7 +10,7 @@ public interface DetailsRepository extends JpaRepository<Details, Integer> {
 
     Optional<Details> findByEmail(String email);
 
-    List<Details> findByNameContaining(String mail);
+    List<Details> findByNameContaining(String partOfName);
 
     List<Details> findByNameIgnoreCase(String name);
 
