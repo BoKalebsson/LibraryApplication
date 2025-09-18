@@ -33,4 +33,10 @@ public class AppUser {
     @JoinColumn(name = "details_id", nullable = false, unique = true)
     private Details userDetails;
 
+    public AppUser(String username, String password, LocalDate regDate, Details userDetails) {
+        this.username = username;
+        this.password = password;
+        this.regDate = regDate;
+        this.userDetails = userDetails;
+    }
 }
