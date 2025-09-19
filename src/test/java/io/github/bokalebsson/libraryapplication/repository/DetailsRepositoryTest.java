@@ -69,6 +69,23 @@ public class DetailsRepositoryTest {
                 .isEqualTo(emailToFind);
     }
 
+    @Test
+    @DisplayName("Finds all Details containing part of a name")
+    void findByNameContaining_shouldReturnCorrectDetails() {
+
+        // Arrange: define partial name to search for.
+        String partOfName = "Pet";
+
+        // Act: fetch all Details with names containing the partial string.
+        List<Details> result = detailsRepository.findByNameContaining(partOfName);
+
+        // Assert: check that the correct users are returned.
+        assertThat(result)
+                .hasSize(2)
+                .extracting(Details::getName)
+                .containsExactlyInAnyOrder("Greger Petterson", "Hans Peterson");
+    }
+
 
 
 }
