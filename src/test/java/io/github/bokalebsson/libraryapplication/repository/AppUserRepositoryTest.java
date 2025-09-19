@@ -11,6 +11,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
@@ -59,21 +60,22 @@ public class AppUserRepositoryTest {
     }
 
     @Test
-    @DisplayName("Save appUser")
-    void saveAppUser() {
+    @DisplayName("Finds an appUser with the provided username.")
+    void findByUsername_shouldReturnCorrectAppUser() {
 
-        // Arrange: create an appUser instance
-        Details details = new Details("email@example.com", "John Doe", LocalDate.of(1990,1,1));
-        AppUser appUser = new AppUser("johndoe", "secret", LocalDate.now(), details);
+        // Arrange: define the username we want to search for.
+        String usernameToFind = "hansluhrberg";
 
-        // Act: save the appUser to the in-memory DB
-        AppUser savedAppUser = appUserRepository.save(appUser);
+        // Act: call the repository method.
+        Optional<AppUser> result = appUserRepository.findByUsername(usernameToFind);
 
-        // Assert: verify that the appUser was assigned an ID (i.e., persisted)
-        assertThat(savedAppUser.getId()).isNotNull();
+        // Assert: verify that the Optional contains a user with the correct username.
+        assertThat(result)
+                .isPresent()
+                .get()
+                .extracting(AppUser::getUsername)
+                .isEqualTo(usernameToFind);
     }
-
-
 
 
 
