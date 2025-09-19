@@ -70,6 +70,21 @@ public class DetailsRepositoryTest {
     }
 
     @Test
+    @DisplayName("Returns empty Optional when email does not exist")
+    void findByEmail_shouldReturnEmptyOptionalWhenEmailNotFound() {
+
+        // Arrange: define a non-existent email.
+        String emailToFind = "nonexistent@test.nu";
+
+        // Act: call repository method.
+        Optional<Details> result = detailsRepository.findByEmail(emailToFind);
+
+        // Assert: verify that no Details object is found.
+        assertThat(result)
+                .isEmpty();
+    }
+
+    @Test
     @DisplayName("Finds all Details containing part of a name")
     void findByNameContaining_shouldReturnCorrectDetails() {
 
