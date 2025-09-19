@@ -176,4 +176,19 @@ public class AppUserRepositoryTest {
                 .extracting(AppUser::getUsername)
                 .isEqualTo("hansluhrberg");
     }
+
+    @Test
+    @DisplayName("Returns empty Optional when email does not exist, ignoring case")
+    void findByUserDetailsEmailIgnoreCase_shouldReturnEmptyOptionalWhenNotFound() {
+
+        // Arrange: define an email that does not exist.
+        String emailToFind = "nonexistent@test.nu";
+
+        // Act: call repository method.
+        Optional<AppUser> result = appUserRepository.findByUserDetails_EmailIgnoreCase(emailToFind);
+
+        // Assert: verify that no AppUser is found.
+        assertThat(result)
+                .isEmpty();
+    }
 }
