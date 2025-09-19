@@ -102,6 +102,21 @@ public class DetailsRepositoryTest {
     }
 
     @Test
+    @DisplayName("Returns empty list when no name contains the search term")
+    void findByNameContaining_shouldReturnEmptyListWhenNoMatch() {
+
+        // Arrange: define a search term that matches no names.
+        String partOfName = "xyz";
+
+        // Act: fetch all Details containing the search term.
+        List<Details> result = detailsRepository.findByNameContaining(partOfName);
+
+        // Assert: verify that the result list is empty.
+        assertThat(result)
+                .isEmpty();
+    }
+
+    @Test
     @DisplayName("Finds all Details by name, ignoring case")
     void findByNameIgnoreCase_shouldReturnCorrectDetails() {
 
