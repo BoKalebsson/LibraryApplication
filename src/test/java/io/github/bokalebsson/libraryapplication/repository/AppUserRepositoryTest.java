@@ -113,6 +113,21 @@ public class AppUserRepositoryTest {
                 .isEqualTo("gregerpettersson");
     }
 
+    @Test
+    @DisplayName("Finds an appUser by email, ignoring case.")
+    void findByUserDetailsEmailIgnoreCase_shouldReturnCorrectAppUser() {
 
+        // Arrange: define the email to search for (different case to test ignore case).
+        String emailToFind = "HANS.LUHRBERG@TEST.NU";
 
+        // Act: call repository method to find user by email.
+        Optional<AppUser> result = appUserRepository.findByUserDetails_EmailIgnoreCase(emailToFind);
+
+        // Assert: verify that the correct user was returned
+        assertThat(result)
+                .isPresent()
+                .get()
+                .extracting(AppUser::getUsername)
+                .isEqualTo("hansluhrberg");
+    }
 }
