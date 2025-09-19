@@ -78,6 +78,21 @@ public class AppUserRepositoryTest {
     }
 
     @Test
+    @DisplayName("Returns empty Optional when username does not exist")
+    void findByUsername_shouldReturnEmptyOptionalWhenNotFound() {
+
+        // Arrange: define a username that does not exist.
+        String usernameToFind = "nonexistentuser";
+
+        // Act: call repository method.
+        Optional<AppUser> result = appUserRepository.findByUsername(usernameToFind);
+
+        // Assert: verify that no AppUser is found.
+        assertThat(result)
+                .isEmpty();
+    }
+
+    @Test
     @DisplayName("Finds all appUsers registered within a given date range.")
     void findByRegDateBetween_shouldReturnCorrectUsers() {
 
