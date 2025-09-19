@@ -145,6 +145,21 @@ public class AppUserRepositoryTest {
     }
 
     @Test
+    @DisplayName("Returns empty Optional when no user has the given Details ID")
+    void findByUserDetailsId_shouldReturnEmptyOptionalWhenNotFound() {
+
+        // Arrange: define a Details ID that does not exist.
+        Integer detailsId = 9999;
+
+        // Act: call repository method.
+        Optional<AppUser> result = appUserRepository.findByUserDetails_Id(detailsId);
+
+        // Assert: verify that no AppUser is found.
+        assertThat(result)
+                .isEmpty();
+    }
+
+    @Test
     @DisplayName("Finds an appUser by email, ignoring case.")
     void findByUserDetailsEmailIgnoreCase_shouldReturnCorrectAppUser() {
 
