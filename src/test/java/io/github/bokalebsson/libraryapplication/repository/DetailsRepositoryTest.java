@@ -86,6 +86,20 @@ public class DetailsRepositoryTest {
                 .containsExactlyInAnyOrder("Greger Petterson", "Hans Peterson");
     }
 
+    @Test
+    @DisplayName("Finds all Details by name, ignoring case")
+    void findByNameIgnoreCase_shouldReturnCorrectDetails() {
 
+        // Arrange: define name with different case to test ignoreCase.
+        String nameToFind = "hans luhrberg";
 
+        // Act: call repository method.
+        List<Details> result = detailsRepository.findByNameIgnoreCase(nameToFind);
+
+        // Assert: verify the correct Details object is returned.
+        assertThat(result)
+                .hasSize(1)
+                .extracting(Details::getName)
+                .containsExactly("Hans Luhrberg");
+    }
 }
