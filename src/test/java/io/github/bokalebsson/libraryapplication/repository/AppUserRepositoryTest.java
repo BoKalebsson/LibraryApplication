@@ -111,6 +111,22 @@ public class AppUserRepositoryTest {
     }
 
     @Test
+    @DisplayName("Returns empty list when no users registered in the date range")
+    void findByRegDateBetween_shouldReturnEmptyListWhenNoMatch() {
+
+        // Arrange: define a date range with no users.
+        LocalDate startDate = LocalDate.of(2020, 1, 1);
+        LocalDate endDate = LocalDate.of(2020, 12, 31);
+
+        // Act: fetch users registered within the date range.
+        List<AppUser> result = appUserRepository.findByRegDateBetween(startDate, endDate);
+
+        // Assert: verify that the result list is empty.
+        assertThat(result)
+                .isEmpty();
+    }
+
+    @Test
     @DisplayName("Finds an appUser by the associated Details ID.")
     void findByUserDetailsId_shouldReturnCorrectAppUser() {
 
