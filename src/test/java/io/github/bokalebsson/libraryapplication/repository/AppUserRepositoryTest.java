@@ -22,6 +22,9 @@ public class AppUserRepositoryTest {
     @Autowired
     private AppUserRepository appUserRepository;
 
+    private AppUser testAppUser1;
+    private AppUser testAppUser2;
+
     @BeforeEach
     void setUp() {
 
@@ -39,14 +42,14 @@ public class AppUserRepositoryTest {
                 .birthDate(LocalDate.of(1976, 6, 17))
                 .build();
 
-        AppUser testAppUser1 = AppUser.builder()
+        testAppUser1 = AppUser.builder()
                 .username("hansluhrberg")
                 .password("123456789")
                 .regDate(LocalDate.of(2023, 12, 13))
                 .userDetails(testUserDetails1)
                 .build();
 
-        AppUser testAppUser2 = AppUser.builder()
+        testAppUser2 = AppUser.builder()
                 .username("gregerpettersson")
                 .password("verysecret")
                 .regDate(LocalDate.of(2025, 9, 18))
@@ -90,6 +93,24 @@ public class AppUserRepositoryTest {
                 .hasSize(1)
                 .extracting(AppUser::getUsername)
                 .containsExactly("gregerpettersson");
+    }
+
+    @Test
+    @DisplayName("Finds an appUser by the associated Details ID.")
+    void findByUserDetailsId_shouldReturnCorrectAppUser() {
+
+        // Arrange: get the Details ID of the second test user.
+        Integer detailsId = testAppUser2.getUserDetails().getId();
+
+        // Act: call repository method to find user by Details ID.
+        Optional<AppUser> result = appUserRepository.findByUserDetails_Id(detailsId);
+
+        // Assert: verify the Optional contains the correct user.
+        assertThat(result)
+                .isPresent()
+                .get()
+                .extracting(AppUser::getUsername)
+                .isEqualTo("gregerpettersson");
     }
 
 
