@@ -13,7 +13,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
 @ActiveProfiles("test")
@@ -21,9 +21,6 @@ public class AppUserRepositoryTest {
 
     @Autowired
     private AppUserRepository appUserRepository;
-
-    private AppUser testAppUser1;
-    private AppUser testAppUser2;
 
     @BeforeEach
     void setUp() {
@@ -42,14 +39,14 @@ public class AppUserRepositoryTest {
                 .birthDate(LocalDate.of(1976, 6, 17))
                 .build();
 
-        testAppUser1 = AppUser.builder()
+        AppUser testAppUser1 = AppUser.builder()
                 .username("hansluhrberg")
                 .password("123456789")
                 .regDate(LocalDate.of(2023, 12, 13))
                 .userDetails(testUserDetails1)
                 .build();
 
-        testAppUser2 = AppUser.builder()
+        AppUser testAppUser2 = AppUser.builder()
                 .username("gregerpettersson")
                 .password("verysecret")
                 .regDate(LocalDate.of(2025, 9, 18))
@@ -75,6 +72,24 @@ public class AppUserRepositoryTest {
                 .get()
                 .extracting(AppUser::getUsername)
                 .isEqualTo(usernameToFind);
+    }
+
+    @Test
+    @DisplayName("Finds all appUsers registered within a given date range.")
+    void findByRegDateBetween_shouldReturnCorrectUsers() {
+
+        // Arrange: define the date range for the search.
+        LocalDate startDate = LocalDate.of(2025, 1, 1);
+        LocalDate endDate = LocalDate.of(2025, 9, 19);
+
+        // Act: fetch users registered within the date range.
+        List<AppUser> result = appUserRepository.findByRegDateBetween(startDate, endDate);
+
+        // Assert: ensure the correct users are returned.
+        assertThat(result)
+                .hasSize(1)
+                .extracting(AppUser::getUsername)
+                .containsExactly("gregerpettersson");
     }
 
 
