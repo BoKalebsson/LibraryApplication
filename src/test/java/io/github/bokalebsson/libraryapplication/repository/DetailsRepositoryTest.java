@@ -132,4 +132,19 @@ public class DetailsRepositoryTest {
                 .extracting(Details::getName)
                 .containsExactly("Hans Luhrberg");
     }
+
+    @Test
+    @DisplayName("Returns empty list when name does not match ignoring case")
+    void findByNameIgnoreCase_shouldReturnEmptyListWhenNoMatch() {
+
+        // Arrange: define a name that does not exist.
+        String nameToFind = "nonexistent name";
+
+        // Act: call repository method.
+        List<Details> result = detailsRepository.findByNameIgnoreCase(nameToFind);
+
+        // Assert: verify that no Details object is returned.
+        assertThat(result)
+                .isEmpty();
+    }
 }
