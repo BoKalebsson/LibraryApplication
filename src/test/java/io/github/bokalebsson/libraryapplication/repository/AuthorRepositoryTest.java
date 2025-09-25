@@ -1,6 +1,7 @@
 package io.github.bokalebsson.libraryapplication.repository;
 
 import io.github.bokalebsson.libraryapplication.entity.Author;
+import io.github.bokalebsson.libraryapplication.entity.Book;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -22,25 +23,46 @@ class AuthorRepositoryTest {
     @Autowired
     private AuthorRepository authorRepository;
 
+    @Autowired
+    private BookRepository bookRepository;
+
     private Author author1;
     private Author author2;
     private Author author3;
+
+    private Book book1;
+    private Book book2;
 
     @BeforeEach
     void setUp() {
 
         authorRepository.deleteAll();
+        bookRepository.deleteAll();
+
+        book1 = Book.builder()
+                .title("Book One")
+                .isbn("123-ABC")
+                .maxLoanDays(14)
+                .build();
+
+        book2 = Book.builder()
+                .title("Book Two")
+                .isbn("456-DEF")
+                .maxLoanDays(7)
+                .build();
+
+        bookRepository.saveAll(List.of(book1, book2));
 
         author1 = Author.builder()
                 .firstName("John")
                 .lastName("Doe")
-                .books(Set.of())
+                .books(Set.of(book1))
                 .build();
 
         author2 = Author.builder()
                 .firstName("Jane")
                 .lastName("Doe")
-                .books(Set.of())
+                .books(Set.of(book2))
                 .build();
 
         author3 = Author.builder()
@@ -132,6 +154,29 @@ class AuthorRepositoryTest {
         // Act: Search with keywords that do not match any author.
         List<Author> found = authorRepository
                 .findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase("xyz", "abc");
+
+        // Assert: Should return empty list.
+        assertThat(found).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Find authors by books' ID - single book.")
+    void testFindByBooksIdSingleBook() {
+
+        // Act: Find authors who have book1.
+        List<Author> found = authorRepository.findByBooks_Id(book1.getId());
+
+        // Assert: The returned author should be "John" since author1 is associated with book1
+        assertThat(found).hasSize(1);
+        assertThat(found.get(0).getFirstName()).isEqualTo("John");
+    }
+
+    @Test
+    @DisplayName("Find authors by books' ID - no match.")
+    void testFindByBooksIdNoMatch() {
+
+        // Act: Use a non-existing book ID.
+        List<Author> found = authorRepository.findByBooks_Id(999);
 
         // Assert: Should return empty list.
         assertThat(found).isEmpty();
