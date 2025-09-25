@@ -1,6 +1,7 @@
 package io.github.bokalebsson.libraryapplication.repository;
 
 import io.github.bokalebsson.libraryapplication.entity.BookLoan;
+import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -20,7 +21,8 @@ public interface BookLoanRepository extends JpaRepository<BookLoan, Integer> {
 
     List<BookLoan> findByLoanDateBetween(LocalDate startDate, LocalDate endDate);
 
-    @Modifying
+    @Modifying(clearAutomatically = true)
+    @Transactional
     @Query("UPDATE BookLoan SET returned = true WHERE id = :loanId")
     void markAsReturned(int loanId);
 
