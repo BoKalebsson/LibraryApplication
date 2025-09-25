@@ -16,6 +16,8 @@ public interface AuthorRepository extends JpaRepository<Author, Integer> {
 
     List<Author> findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(String firstName, String lastName);
 
+    List<Author> findByBooks_Id(int bookId);
+
     @Modifying(clearAutomatically = true)
     @Transactional
     @Query("UPDATE Author SET firstName = :firstName, lastName = :lastName WHERE id = :id")
