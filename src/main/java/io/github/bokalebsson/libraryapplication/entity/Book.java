@@ -3,6 +3,9 @@ package io.github.bokalebsson.libraryapplication.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.HashSet;
+import java.util.Set;
+
 @Entity
 @Table(name = "book")
 @Getter
@@ -24,5 +27,31 @@ public class Book {
 
     @Column(nullable = false)
     private int maxLoanDays;
+
+    @ManyToMany(mappedBy = "books")
+    private Set<Author> authors;
+
+    public void addAuthor(Author author) {
+        if (authors == null) {
+            authors = new HashSet<>();
+        }
+        authors.add(author);
+
+        if (author.getBooks() == null) {
+            author.setBooks(new HashSet<>());
+        }
+        if (!author.getBooks().contains(this)) {
+            author.getBooks().add(this);
+        }
+    }
+
+    public void removeAuthor(Author author) {
+        if (authors != null) {
+            authors.remove(author);
+            if (author.getBooks() != null) {
+                author.getBooks().remove(this);
+            }
+        }
+    }
 
 }
