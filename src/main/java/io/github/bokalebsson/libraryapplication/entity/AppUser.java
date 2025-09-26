@@ -57,6 +57,10 @@ public class AppUser {
         bookLoans.add(loan);
         loan.setBorrower(this);
 
+        LocalDate loanDate = loan.getLoanDate() != null ? loan.getLoanDate() : LocalDate.now();
+        loan.setLoanDate(loanDate);
+        loan.setDueDate(loanDate.plusDays(book.getMaxLoanDays()));
+
         book.setAvailable(false);
     }
 
