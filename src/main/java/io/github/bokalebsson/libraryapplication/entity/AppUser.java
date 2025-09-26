@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "app_users")
@@ -31,10 +33,28 @@ public class AppUser {
     @JoinColumn(name = "details_id", nullable = false, unique = true)
     private Details userDetails;
 
+    @OneToMany(mappedBy = "borrower")
+    private List<BookLoan> bookLoans;
+
     public AppUser(String username, String password, LocalDate regDate, Details userDetails) {
         this.username = username;
         this.password = password;
         this.regDate = regDate;
         this.userDetails = userDetails;
+    }
+
+    public void addBookLoan(BookLoan loan){
+        if(bookLoans==null){
+            bookLoans = new ArrayList<>();
+        }
+        bookLoans.add(loan);
+        loan.setBorrower(this);
+    }
+
+    public void removeBookLoan(BookLoan loan){
+        if(bookLoans!=null){
+            bookLoans.remove(loan);
+            loan.setBorrower(null);
+        }
     }
 }
