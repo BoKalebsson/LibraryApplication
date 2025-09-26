@@ -10,9 +10,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -43,12 +43,14 @@ class AuthorRepositoryTest {
                 .title("Book One")
                 .isbn("123-ABC")
                 .maxLoanDays(14)
+                .authors(new HashSet<>())
                 .build();
 
         book2 = Book.builder()
                 .title("Book Two")
                 .isbn("456-DEF")
                 .maxLoanDays(7)
+                .authors(new HashSet<>())
                 .build();
 
         bookRepository.saveAll(List.of(book1, book2));
@@ -56,19 +58,19 @@ class AuthorRepositoryTest {
         author1 = Author.builder()
                 .firstName("John")
                 .lastName("Doe")
-                .books(Set.of(book1))
+                .books(new HashSet<>(List.of(book1)))
                 .build();
 
         author2 = Author.builder()
                 .firstName("Jane")
                 .lastName("Doe")
-                .books(Set.of(book2))
+                .books(new HashSet<>(List.of(book2)))
                 .build();
 
         author3 = Author.builder()
                 .firstName("Alice")
                 .lastName("Smith")
-                .books(Set.of())
+                .books(new HashSet<>())
                 .build();
 
         authorRepository.saveAll(List.of(author1, author2, author3));
@@ -242,6 +244,149 @@ class AuthorRepositoryTest {
         List<Author> allAuthors = authorRepository.findAll();
         assertThat(allAuthors).hasSize(3);
     }
+
+    @Test
+    @DisplayName("Add book to author bi-directionally.")
+    void testAddBookToAuthorBiDirectional() {
+
+        // Arrange: Create a new book and save.
+        Book newBook = Book.builder().title("New Book").isbn("999-XYZ").maxLoanDays(12).build();
+        bookRepository.save(newBook);
+
+        // Arrange: Retrieve author3 from repository.
+        Author author = authorRepository.findById(author3.getId()).orElseThrow();
+
+        // Act: Add book to author using bidirectional method
+        author.addBook(newBook);
+        authorRepository.save(author);
+
+        // Assert: Author should contain the new book.
+        Author updatedAuthor = authorRepository.findById(author3.getId()).orElseThrow();
+        assertThat(updatedAuthor.getBooks()).contains(newBook);
+
+        // Assert: Book should contain the author.
+        assertThat(newBook.getAuthors()).contains(updatedAuthor);
+    }
+
+    @Test
+    @DisplayName("Add same book twice to author should not duplicate.")
+    void testAddSameBookTwice() {
+
+        // Arrange: Create a new book and save it.
+        Book newBook = Book.builder().title("Duplicate Test Book").isbn("111-AAA").maxLoanDays(10).authors(new HashSet<>()).build();
+        bookRepository.save(newBook);
+
+        // Arrange: Retrieve author3.
+        Author author = authorRepository.findById(author3.getId()).orElseThrow();
+
+        // Act: Add the same book twice.
+        author.addBook(newBook);
+        author.addBook(newBook);
+        authorRepository.save(author);
+
+        // Assert: Author's books set should contain the book only once.
+        Author updatedAuthor = authorRepository.findById(author3.getId()).orElseThrow();
+        assertThat(updatedAuthor.getBooks()).hasSize(1).contains(newBook);
+
+        // Assert: Book's authors set should contain the author only once.
+        Book updatedBook = bookRepository.findById(newBook.getId()).orElseThrow();
+        assertThat(updatedBook.getAuthors()).hasSize(1).contains(updatedAuthor);
+    }
+
+    @Test
+    @DisplayName("Remove book from author bi-directionally.")
+    @Transactional
+    void testRemoveBookFromAuthorBiDirectional() {
+
+        // Arrange: Retrieve author1 and ensure book1 is present.
+        Author author = authorRepository.findById(author1.getId()).orElseThrow();
+        assertThat(author.getBooks()).contains(book1);
+
+        // Act: Remove book1.
+        author.removeBook(book1);
+        authorRepository.save(author);
+
+        // Assert: Author no longer has book1.
+        Author updatedAuthor = authorRepository.findById(author1.getId()).orElseThrow();
+        assertThat(updatedAuthor.getBooks()).doesNotContain(book1);
+
+        // Assert: Fetch book1 again from repository to verify authors.
+        Book updatedBook = bookRepository.findById(book1.getId()).orElseThrow();
+        assertThat(updatedBook.getAuthors()).doesNotContain(updatedAuthor);
+    }
+
+    @Test
+    @DisplayName("Remove non-existing book from author should not throw.")
+    void testRemoveNonExistingBook() {
+
+        // Arrange: Create a book not associated with author1.
+        Book newBook = Book.builder().title("Non-associated Book").isbn("222-BBB").maxLoanDays(5).authors(new HashSet<>()).build();
+        bookRepository.save(newBook);
+
+        // Arrange: Retrieve author1.
+        Author author = authorRepository.findById(author1.getId()).orElseThrow();
+
+        // Act: Remove the book which author1 does not have.
+        author.removeBook(newBook);
+        authorRepository.save(author);
+
+        // Assert: Author's books should remain unchanged (still contains book1).
+        Author updatedAuthor = authorRepository.findById(author1.getId()).orElseThrow();
+        assertThat(updatedAuthor.getBooks()).contains(book1);
+    }
+
+    @Test
+    @DisplayName("Multiple authors sharing the same book.")
+    void testMultipleAuthorsSameBook() {
+
+        // Arrange: Create a new book.
+        Book sharedBook = Book.builder().title("Shared Book").isbn("333-CCC").maxLoanDays(15).authors(new HashSet<>()).build();
+        bookRepository.save(sharedBook);
+
+        // Arrange: Retrieve author1 and author2.
+        Author authorA = authorRepository.findById(author1.getId()).orElseThrow();
+        Author authorB = authorRepository.findById(author2.getId()).orElseThrow();
+
+        // Act: Both authors add the shared book.
+        authorA.addBook(sharedBook);
+        authorB.addBook(sharedBook);
+        authorRepository.saveAll(List.of(authorA, authorB));
+
+        // Assert: Both authors should have the shared book.
+        Author updatedA = authorRepository.findById(author1.getId()).orElseThrow();
+        Author updatedB = authorRepository.findById(author2.getId()).orElseThrow();
+        assertThat(updatedA.getBooks()).contains(sharedBook);
+        assertThat(updatedB.getBooks()).contains(sharedBook);
+
+        // Assert: The book should list both authors.
+        Book updatedBook = bookRepository.findById(sharedBook.getId()).orElseThrow();
+        assertThat(updatedBook.getAuthors()).contains(updatedA, updatedB);
+    }
+
+    @Test
+    @DisplayName("Find authors by books' ID when multiple authors share a book.")
+    void testFindByBooksIdMultipleAuthors() {
+
+        // Arrange: Create a new book.
+        Book sharedBook = Book.builder().title("Multi-author Book").isbn("444-DDD").maxLoanDays(20).authors(new HashSet<>()).build();
+        bookRepository.save(sharedBook);
+
+        // Arrange: Add to author1 and author2.
+        Author authorA = authorRepository.findById(author1.getId()).orElseThrow();
+        Author authorB = authorRepository.findById(author2.getId()).orElseThrow();
+        authorA.addBook(sharedBook);
+        authorB.addBook(sharedBook);
+        authorRepository.saveAll(List.of(authorA, authorB));
+
+        // Act: Find authors by the shared book's ID.
+        List<Author> found = authorRepository.findByBooks_Id(sharedBook.getId());
+
+        // Assert: Both authors should be returned.
+        assertThat(found).hasSize(2).extracting(Author::getFirstName)
+                .containsExactlyInAnyOrder(authorA.getFirstName(), authorB.getFirstName());
+    }
+
+
 
 
 }
