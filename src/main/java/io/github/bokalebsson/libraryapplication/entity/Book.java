@@ -31,6 +31,9 @@ public class Book {
     @ManyToMany(mappedBy = "books")
     private Set<Author> authors;
 
+    @Column(nullable = false)
+    private boolean available = true;
+
     public void addAuthor(Author author) {
         if (authors == null) {
             authors = new HashSet<>();
