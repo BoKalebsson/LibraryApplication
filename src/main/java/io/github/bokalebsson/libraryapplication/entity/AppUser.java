@@ -44,17 +44,31 @@ public class AppUser {
     }
 
     public void addBookLoan(BookLoan loan){
+
+        Book book = loan.getBook();
+
+        if (!book.isAvailable()) {
+            throw new IllegalStateException("Book is not available for loan: " + book.getTitle());
+        }
+
         if(bookLoans==null){
             bookLoans = new ArrayList<>();
         }
         bookLoans.add(loan);
         loan.setBorrower(this);
+
+        book.setAvailable(false);
     }
 
     public void removeBookLoan(BookLoan loan){
         if(bookLoans!=null){
             bookLoans.remove(loan);
             loan.setBorrower(null);
+        }
+
+        Book book = loan.getBook();
+        if (book != null) {
+            book.setAvailable(true);
         }
     }
 }
